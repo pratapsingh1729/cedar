@@ -190,14 +190,14 @@ impl From<ValueKind> for Expr {
     }
 }
 
-impl From<PartialValue> for Expr {
-    fn from(pv: PartialValue) -> Self {
-        match pv {
-            PartialValue::Value(v) => Expr::from(v),
-            PartialValue::Residual(expr) => expr,
-        }
-    }
-}
+// impl From<PartialValue> for Expr {
+//     fn from(pv: PartialValue) -> Self {
+//         match pv {
+//             PartialValue::Value(v) => Expr::from(v),
+//             PartialValue::Residual(expr) => expr,
+//         }
+//     }
+// }
 
 impl<T> Expr<T> {
     pub(crate) fn new(expr_kind: ExprKind<T>, source_loc: Option<Loc>, data: T) -> Self {

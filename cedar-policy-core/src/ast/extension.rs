@@ -17,6 +17,7 @@
 use crate::ast::*;
 use crate::entities::SchemaType;
 use crate::evaluator;
+use crate::evaluator::evaluation_errors::NonValueError;
 use std::any::Any;
 use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
@@ -339,10 +340,15 @@ impl ExtensionFunction {
     }
 
     /// Call the `ExtensionFunction` with the given args
-    pub fn call(&self, args: &[Value]) -> evaluator::Result<PartialValue> {
+    pub fn call(&self, args: &[Value]) -> evaluator::Result<Value> {
         match (self.func)(args)? {
-            ExtensionOutputValue::Known(v) => Ok(PartialValue::Value(v)),
-            ExtensionOutputValue::Unknown(u) => Ok(PartialValue::Residual(Expr::unknown(u))),
+            ExtensionOutputValue::Known(v) => Ok(v),
+            ExtensionOutputValue::Unknown(u) => {
+                Err(evaluator::EvaluationError::NonValue(NonValueError {
+                    expr: Expr::unknown(u),
+                    source_loc: None,
+                }))
+            } // Ok(PartialValue::Residual(Expr::unknown(u))),
         }
     }
 

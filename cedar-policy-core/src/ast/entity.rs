@@ -524,7 +524,7 @@ pub struct Entity {
     /// Internal `BTreeMap` of attributes.
     ///
     /// We use a `BTreeMap` so that the keys have a deterministic order.
-    attrs: BTreeMap<SmolStr, PartialValue>,
+    attrs: BTreeMap<SmolStr, Value>,
 
     /// Set of indirect ancestors of this `Entity` as UIDs
     indirect_ancestors: HashSet<EntityUID>,
@@ -540,7 +540,7 @@ pub struct Entity {
     ///
     /// Like for `attrs`, we use a `BTreeMap` so that the tags have a
     /// deterministic order.
-    tags: BTreeMap<SmolStr, PartialValue>,
+    tags: BTreeMap<SmolStr, Value>,
 }
 
 impl std::hash::Hash for Entity {
@@ -601,10 +601,10 @@ impl Entity {
     /// deconstruct and re-build the map perhaps unnecessarily.
     pub fn new_with_attr_partial_value(
         uid: EntityUID,
-        attrs: impl IntoIterator<Item = (SmolStr, PartialValue)>,
+        attrs: impl IntoIterator<Item = (SmolStr, Value)>,
         indirect_ancestors: HashSet<EntityUID>,
         parents: HashSet<EntityUID>,
-        tags: impl IntoIterator<Item = (SmolStr, PartialValue)>,
+        tags: impl IntoIterator<Item = (SmolStr, Value)>,
     ) -> Self {
         Self {
             uid,
@@ -621,12 +621,12 @@ impl Entity {
     }
 
     /// Get the value for the given attribute, or `None` if not present
-    pub fn get(&self, attr: &str) -> Option<&PartialValue> {
+    pub fn get(&self, attr: &str) -> Option<&Value> {
         self.attrs.get(attr)
     }
 
     /// Get the value for the given tag, or `None` if not present
-    pub fn get_tag(&self, tag: &str) -> Option<&PartialValue> {
+    pub fn get_tag(&self, tag: &str) -> Option<&Value> {
         self.tags.get(tag)
     }
 
@@ -681,12 +681,12 @@ impl Entity {
     }
 
     /// Iterate over this entity's attributes
-    pub fn attrs(&self) -> impl Iterator<Item = (&SmolStr, &PartialValue)> {
+    pub fn attrs(&self) -> impl Iterator<Item = (&SmolStr, &Value)> {
         self.attrs.iter()
     }
 
     /// Iterate over this entity's tags
-    pub fn tags(&self) -> impl Iterator<Item = (&SmolStr, &PartialValue)> {
+    pub fn tags(&self) -> impl Iterator<Item = (&SmolStr, &Value)> {
         self.tags.iter()
     }
 
@@ -767,10 +767,10 @@ impl Entity {
         self,
     ) -> (
         EntityUID,
-        HashMap<SmolStr, PartialValue>,
+        HashMap<SmolStr, Value>,
         HashSet<EntityUID>,
         HashSet<EntityUID>,
-        HashMap<SmolStr, PartialValue>,
+        HashMap<SmolStr, Value>,
     ) {
         (
             self.uid,
