@@ -102,7 +102,15 @@ pub struct Template {
 }
 
 impl Template {
-    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::Policy {
+    pub closed spec fn complete_slot_env(&self, slot_env: SpecSlotEnv) -> bool {
+        match self.body {
+            TemplateBody::TemplateBody(b) => b.complete_slot_env(slot_env)
+        }
+    }
+
+    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::Policy
+        recommends self.complete_slot_env(slot_env)
+    {
         match self.body {
             TemplateBody::TemplateBody(b) => b.view_with_slot_env(slot_env)
         }
@@ -1091,7 +1099,15 @@ pub struct TemplateBodyImpl {
 }
 
 impl TemplateBodyImpl {
-    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::Policy {
+    pub closed spec fn complete_slot_env(&self, slot_env: SpecSlotEnv) -> bool {
+        &&& self.principal_constraint.complete_slot_env(slot_env)
+        &&& self.resource_constraint.complete_slot_env(slot_env)
+        &&& self.non_scope_constraints.complete_slot_env(slot_env)
+    }
+
+    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::Policy
+        recommends self.complete_slot_env(slot_env)
+    {
         spec_ast::Policy {
             id: self.id@,
             effect: self.effect@,
@@ -1230,6 +1246,7 @@ impl TemplateBody {
     /// just has `principal,`), or an equality or hierarchy constraint
     pub fn principal_constraint_expr(&self) -> (expr: Expr)
         ensures forall |slot_env: Map<SlotId, spec_ast::EntityUID>|
+            expr.complete_slot_env(slot_env) ==>
             #[trigger] expr.view_with_slot_env(slot_env) == self.view_with_slot_env(slot_env).principal_scope.to_expr()
     {
         match self {
@@ -1466,7 +1483,13 @@ pub struct PrincipalConstraint {
 }
 
 impl PrincipalConstraint {
-    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::PrincipalScope {
+    pub closed spec fn complete_slot_env(&self, slot_env: SpecSlotEnv) -> bool {
+        self.constraint.complete_slot_env(get_slot_env_principal(slot_env))
+    }
+
+    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::PrincipalScope
+        recommends self.complete_slot_env(slot_env)
+    {
         spec_ast::PrincipalScope {
             principal_scope: self.constraint.view_with_slot(get_slot_env_principal(slot_env))
         }
@@ -1595,7 +1618,13 @@ pub struct ResourceConstraint {
 }
 
 impl ResourceConstraint {
-    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::ResourceScope {
+    pub closed spec fn complete_slot_env(&self, slot_env: SpecSlotEnv) -> bool {
+        self.constraint.complete_slot_env(get_slot_env_resource(slot_env))
+    }
+
+    pub closed spec fn view_with_slot_env(&self, slot_env: SpecSlotEnv) -> spec_ast::ResourceScope
+        recommends self.complete_slot_env(slot_env)
+    {
         spec_ast::ResourceScope {
             resource_scope: self.constraint.view_with_slot(get_slot_env_resource(slot_env))
         }
@@ -1729,6 +1758,13 @@ pub enum EntityReference {
 }
 
 impl EntityReference {
+    pub open spec fn complete_slot_env(&self, slot_env: SpecSlotEnv, slot: SlotId) -> bool {
+        match self {
+            EntityReference::EUID(_) => true,
+            EntityReference::Slot(_) => slot_env.contains_key(slot),
+        }
+    }
+
     pub open spec fn view_with_slot(&self, v: spec_ast::EntityUID) -> spec_ast::EntityUID {
         match self {
             EntityReference::EUID(euid) => euid@,
@@ -1757,7 +1793,7 @@ impl EntityReference {
     /// context.
     pub fn into_expr(&self, slot: SlotId) -> (expr: Expr)
         ensures forall |slot_env: SpecSlotEnv|
-            slot_env.contains_key(slot) ==>
+            slot_env.complete_slot_env(slot_env, slot) ==>
                 #[trigger] expr.view_with_slot_env(slot_env) == spec_ast::Expr::lit(spec_ast::Prim::entity_uid(self.view_with_slot(slot_env[slot])))
     {
         match self {
@@ -1929,8 +1965,6 @@ impl PrincipalOrResourceConstraint {
         proof {
             reveal(spec_ast::Scope::to_expr);
         }
-        let ghost slot = spec_PrincipalOrResource_to_SlotId(v);
-        let ghost spec_var = spec_PrincipalOrResource_to_Var(v)@;
         match self {
             PrincipalOrResourceConstraint::Any => Expr::bool(true),
             PrincipalOrResourceConstraint::Eq(euid) => {

@@ -202,6 +202,19 @@ impl<T> BTreeMapView for BTreeMap<SmolStr, Expr<T>> {
     uninterp spec fn view(&self) -> Self::V; // plan to just axiomatize it for now
 }
 
+// pub proof fn test_complete_slot_env(e: Expr, slot_env: Map<SlotId, spec_ast::EntityUID>)
+//     requires e.complete_slot_env(slot_env)
+// {
+//     match e.expr_kind {
+//         ExprKind::If { test_expr, then_expr, else_expr } => {
+//             assert(test_expr.complete_slot_env(slot_env));
+//             assert(then_expr.complete_slot_env(slot_env));
+//             assert(else_expr.complete_slot_env(slot_env));
+//         },
+//         _ => {}
+//     }
+// }
+
 impl<T> ExprKind<T> {
     // Encodes the "values total map" invariant
     pub open spec fn complete_slot_env(&self, slot_env: Map<SlotId, spec_ast::EntityUID>) -> bool
@@ -266,7 +279,6 @@ impl<T> ExprKind<T> {
         match self {
             ExprKind::Record(map) => {
                 broadcast use BTreeMapView::axiom_btree_map_view_decreases;
-                // assert(forall |e: Expr<T>| map@.dom().finite() && map@.contains_value(e) ==> decreases_to!(map@ => e));
             },
             _ => {}
         };
@@ -372,12 +384,12 @@ impl<T> ExprKind<T> {
     #[via_fn]
     proof fn view_with_slot_env_decreases(&self, slot_env: Map<SlotId, spec_ast::EntityUID>) {
         match self {
-            ExprKind::Set(exprs) => {
-                assert(forall |e: Expr<T>| exprs@.contains(e) ==> decreases_to!(exprs => e));
-            }
+            // ExprKind::Set(exprs) => {
+            //     assert(forall |e: Expr<T>| exprs@.contains(e) ==> decreases_to!(exprs => e));
+            // }
             ExprKind::Record(map) => {
                 broadcast use BTreeMapView::axiom_btree_map_view_decreases;
-                assert(forall |e: Expr<T>| map@.dom().finite() && map@.contains_value(e) ==> decreases_to!(map@ => e));
+                // assert(forall |e: Expr<T>| map@.dom().finite() && map@.contains_value(e) ==> decreases_to!(map@ => e));
             },
             _ => {}
         };

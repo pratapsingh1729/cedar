@@ -175,9 +175,10 @@ impl<'e> Evaluator<'e> {
     /// `interpret()`.
     #[allow(clippy::cognitive_complexity)]
     fn interpret_internal(&self, expr: &Expr, slots: &SlotEnv) -> Result<Value>
+        requires expr.complete_slot_env(slots)
 // ensures
-        //     result matches Ok(r) ==> spec_evaluator(expr@, ...) matches Ok(r_spec) && r@ == r_spec,
-        //     result is Err ==> spec_evaluator(expr@, ...) is Err
+        //     result matches Ok(r) ==> spec_evaluator(expr.view_with_slot_env(slots), ...) matches Ok(r_spec) && r@ == r_spec,
+        //     result is Err ==> spec_evaluator(expr@, ...) is Err || result Error is an unlinked slot error
     {
         let loc = expr.source_loc(); // the `loc` describing the location of the entire expression
         match expr.expr_kind() {

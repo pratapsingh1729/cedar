@@ -172,7 +172,7 @@ pub open spec fn get_attr(v: Value, a: Attr, es: Entities) -> SpecResult<Value> 
     }
 }
 
-pub open spec fn evaluate(x: Expr, req: Request, es: Entities) -> SpecResult<Value>
+pub open spec fn evaluate(x: Expr, req: Request, es: Entities, slot_env: SlotEnv) -> SpecResult<Value>
     decreases x via evaluate_decreases
 {
     match x {
@@ -183,6 +183,7 @@ pub open spec fn evaluate(x: Expr, req: Request, es: Entities) -> SpecResult<Val
             Var::Resource => Ok(Value::entity_uid(req.resource)),
             Var::Context => Ok(Value::Record { m: req.context }),
         },
+        Expr::Slot { slot } => ...
         Expr::Ite { cond, then_expr, else_expr } => {
             match evaluate(*cond, req, es) {
                 Ok(cond_result) => match cond_result {

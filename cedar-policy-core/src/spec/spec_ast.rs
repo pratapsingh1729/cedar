@@ -232,9 +232,15 @@ pub enum BinaryOp {
   ContainsAny,
 }
 
+pub enum SlotId {
+    Principal,
+    Resource
+}
+
 pub enum Expr {
     Lit { p: Prim },
     Var { v: Var },
+    Slot { slot: SlotId }
     Ite {
         cond: Box<Expr>,
         then_expr: Box<Expr>,
