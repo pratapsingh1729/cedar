@@ -240,7 +240,6 @@ pub enum SlotId {
 pub enum Expr {
     Lit { p: Prim },
     Var { v: Var },
-    Slot { slot: SlotId }
     Ite {
         cond: Box<Expr>,
         then_expr: Box<Expr>,
