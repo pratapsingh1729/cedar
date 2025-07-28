@@ -219,7 +219,7 @@ impl<'e> Evaluator<'e> {
                 // Verus doesn't like `Option::map`
                 proof {
                     SlotId::lemma_deep_view_injective();
-                    lemma_hashmap_deepview_properties(*slots);
+                    // lemma_hashmap_deepview_properties(*slots);
                 };
                 match slots.get(id) {
                     Some(euid) => Ok(Value::from(euid.clone())),

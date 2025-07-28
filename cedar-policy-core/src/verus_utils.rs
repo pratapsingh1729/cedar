@@ -269,8 +269,11 @@ impl<T> FiniteSet<T> {
 
     pub uninterp spec fn from_seq(s: Seq<T>) -> FiniteSet<T>;
 
-    pub broadcast axiom fn finiteset_from_seq_contains_spec(s:Seq<T>, t: T)
-        ensures s.contains(t) <==> #[trigger] Self::from_seq(s).contains(t);
+    pub broadcast proof fn finiteset_from_seq_contains_spec(s:Seq<T>, t: T)
+        ensures s.contains(t) <==> #[trigger] Self::from_seq(s).contains(t)
+    {
+        admit()
+    }
 }
 
 
